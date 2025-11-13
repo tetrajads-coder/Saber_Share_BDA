@@ -13,19 +13,21 @@ public class Historial {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idHistorial;
 
-    @Column(name = "servicio")
-    private String servicio;
-
-    @Column(name = "curso")
-    private String curso;
-
     @Column(name = "fechapago")
     private LocalDate fechapago;
 
     @Column(name = "pago")
     private Double pago;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Usuario_idUsuario")
     private Usuario usuario;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Servicio_idServicios")
+    private Servicio servicio;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Curso_idCurso")
+    private Curso curso;
 }

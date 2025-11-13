@@ -1,11 +1,18 @@
 package org.example.demo.controler;
 
 import lombok.AllArgsConstructor;
+import org.example.demo.dto.CursoDto;
 import org.example.demo.dto.HistorialDto;
+import org.example.demo.model.Curso;
+import org.example.demo.model.Historial;
+import org.example.demo.model.Servicio;
+import org.example.demo.model.Usuario;
 import org.example.demo.service.HistorialService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 
 @RequestMapping("/Amaury/api")
@@ -26,6 +33,47 @@ public class HistorialControler {
         HistorialDto dto = historialService.getDtoById(id);
         if (dto == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/historial")
+    public ResponseEntity<HistorialDto> save(@RequestBody HistorialDto dto) {
+        if (dto.getUsuario_idUsuario() == null) {
+            return ResponseEntity.badRequest().body(null); // "Usuario_idUsuario es requerido"
+        }
+
+        // 1. Convertir DTO a Entidad
+        Historial entidad = Historial.builder()
+                .fechapago(dto.getFechapago() != null ? LocalDate.parse(dto.getFechapago()) : null)
+                .pago(dto.getPago())
+                .usuario(Usuario.builder().idUsuario(dto.getUsuario_idUsuario()).build())
+                // Creamos los "stubs" (apuntadores) solo con el ID
+                .curso(dto.getCursoId() != null ? Curso.builder().idCurso(dto.getCursoId()).build() : null)
+                .servicio(dto.getServicioId() != null ? Servicio.builder().idServicios(dto.getServicioId()).build() : null)
+                .build();
+
+        // 2. Guardar la entidad
+        Historial saved = historialService.save(entidad);
+
+        // 3. Convertir la entidad guardada a DTO para la respuesta
+        HistorialDto dtoRespuesta = toDto(saved);
+
+        // 4. Retornar 201 Created
+        return ResponseEntity
+                .created(URI.create("/Amaury/api/historial/" + saved.getIdHistorial()))
+                .body(dtoRespuesta);
+    }
+
+    // Agregamos un helper "toDto" privado para que el POST lo use
+    // (Tu ServiceImpl tiene uno, pero es privado)
+    private HistorialDto toDto(Historial h) {
+        return HistorialDto.builder()
+                .idHistorial(h.getIdHistorial())
+                .fechapago(h.getFechapago() != null ? h.getFechapago().toString() : null)
+                .pago(h.getPago())
+                .usuario_idUsuario(h.getUsuario() != null ? h.getUsuario().getIdUsuario() : null)
+                .servicioId(h.getServicio() != null ? h.getServicio().getIdServicios() : null)
+                .cursoId(h.getCurso() != null ? h.getCurso().getIdCurso() : null)
+                .build();
     }
 
     @GetMapping("/historial/usuario/{usuarioId}")

@@ -9,12 +9,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "Metodo de Pago") // tu tabla tiene espacio, si puedes cámbiala a MetodoDePago
+@Table(name = "Metodo_de_Pago")
 public class MetodoDePago {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idMetodo de Pago")
+    @Column(name = "idMetodo_de_Pago")
     private Integer idMetodoDePago;
 
     @Column(name = "compañia", length = 45)

@@ -42,14 +42,12 @@ public class HistorialServiceImpl implements HistorialService {
     private HistorialDto toDto(Historial h) {
         return HistorialDto.builder()
                 .idHistorial(h.getIdHistorial())
-                .servicio(
-
-                        h.getServicio()
-                )
-                .curso(h.getCurso())
                 .fechapago(h.getFechapago() != null ? h.getFechapago().toString() : null)
                 .pago(h.getPago())
                 .usuario_idUsuario(h.getUsuario() != null ? h.getUsuario().getIdUsuario() : null)
+                // Checamos si los objetos no son nulos antes de pedir sus IDs
+                .servicioId(h.getServicio() != null ? h.getServicio().getIdServicios() : null)
+                .cursoId(h.getCurso() != null ? h.getCurso().getIdCurso() : null)
                 .build();
     }
 }

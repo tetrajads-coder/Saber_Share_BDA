@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor @AllArgsConstructor
 public class HistorialDto {
     private Integer idHistorial;
-    private String servicio;
-    private String curso;
     private String fechapago;
     private Double pago;
     private Integer usuario_idUsuario;
+    private Integer servicioId;
+    private Integer cursoId;
 }

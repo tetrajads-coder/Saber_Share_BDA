@@ -33,7 +33,7 @@ public class ServicioControler
                         servicios
                                 .stream()
                                 .map(s -> ServicioDto.builder()
-                                        .servicioId(s.getServicios())
+                                        .servicioId(s.getIdServicios())
                                         .titulo(s.getTitSer())
                                         .descripcion(s.getDescripcion())
                                         .precio(s.getPrecioSer())
@@ -54,7 +54,7 @@ public class ServicioControler
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(ServicioDto.builder()
-                .servicioId(s.getServicios())
+                .servicioId(s.getIdServicios())
                 .titulo(s.getTitSer())
                 .descripcion(s.getDescripcion())
                 .precio(s.getPrecioSer())
@@ -79,7 +79,7 @@ public class ServicioControler
                 .build();
         servicioService.save(s);
         return ResponseEntity.ok(ServicioDto.builder()
-                .servicioId(s.getServicios())
+                .servicioId(s.getIdServicios())
                 .titulo(s.getTitSer())
                 .descripcion(s.getDescripcion())
                 .precio(s.getPrecioSer())
@@ -111,7 +111,7 @@ public class ServicioControler
                 .build();
         servicioService.update(id, s);
         return ResponseEntity.ok(ServicioDto.builder()
-                .servicioId(s.getServicios())
+                .servicioId(s.getIdServicios())
                 .titulo(s.getTitSer())
                 .descripcion(s.getDescripcion())
                 .precio(s.getPrecioSer())
