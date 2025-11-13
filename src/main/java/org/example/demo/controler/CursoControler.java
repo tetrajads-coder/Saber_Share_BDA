@@ -19,7 +19,7 @@ public class CursoControler {
 
     private final CursoService cursoService;
 
-    // GET /curso
+
     @GetMapping("/curso")
     public ResponseEntity<List<CursoDto>> lista() {
         List<Curso> cursos = cursoService.getAll();
@@ -30,7 +30,7 @@ public class CursoControler {
         );
     }
 
-    // GET /curso/{id}
+
     @GetMapping("/curso/{id}")
     public ResponseEntity<CursoDto> getById(@PathVariable Integer id) {
         Curso c = cursoService.getById(id);
@@ -38,11 +38,11 @@ public class CursoControler {
         return ResponseEntity.ok(toDto(c));
     }
 
-    // POST /curso
+
     @PostMapping("/curso")
     public ResponseEntity<CursoDto> save(@RequestBody CursoDto dto) {
         if (dto.getUsuario_idUsuario() == null)
-            return ResponseEntity.badRequest().build(); // "Usuario_idUsuario es requerido"
+            return ResponseEntity.badRequest().build();
 
         Curso entidad = Curso.builder()
                 .titCur(dto.getTit_cur())
@@ -59,11 +59,11 @@ public class CursoControler {
                 .body(toDto(saved));
     }
 
-    // PUT /curso/{id}
+
     @PutMapping("/curso/{id}")
     public ResponseEntity<CursoDto> update(@PathVariable Integer id, @RequestBody CursoDto dto) {
         if (dto.getUsuario_idUsuario() == null)
-            return ResponseEntity.badRequest().build(); // "Usuario_idUsuario es requerido"
+            return ResponseEntity.badRequest().build();
 
         Curso cambios = Curso.builder()
                 .titCur(dto.getTit_cur())
@@ -79,14 +79,14 @@ public class CursoControler {
         return ResponseEntity.ok(toDto(up));
     }
 
-    // DELETE /curso/{id}
+
     @DeleteMapping("/curso/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         cursoService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    // --------- mapper ----------
+
     private CursoDto toDto(Curso c) {
         return CursoDto.builder()
                 .idCurso(c.getIdCurso())

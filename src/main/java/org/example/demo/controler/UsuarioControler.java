@@ -37,7 +37,6 @@ public class UsuarioControler {
         );
     }
 
-    // GET /usuario/{id}
     @RequestMapping("/usuario/{id}")
     public ResponseEntity<UsuarioDto> getById(@PathVariable Integer id) {
         Usuario u = usuarioService.getById(id);
@@ -45,7 +44,6 @@ public class UsuarioControler {
         return ResponseEntity.ok(toDto(u));
     }
 
-    // POST /usuario
     @PostMapping("/usuario")
     public ResponseEntity<UsuarioDto> save(@RequestBody UsuarioDto dto) {
         Usuario u = Usuario.builder()
@@ -60,7 +58,6 @@ public class UsuarioControler {
         return ResponseEntity.ok(toDto(u));
     }
 
-    // PUT /usuario/{id}
     @PutMapping("/usuario/{id}")
     public ResponseEntity<UsuarioDto> update(@PathVariable Integer id, @RequestBody UsuarioDto dto) {
         Usuario up = usuarioService.update(id, Usuario.builder()
@@ -76,14 +73,12 @@ public class UsuarioControler {
         return ResponseEntity.ok(toDto(up));
     }
 
-    // DELETE /usuario/{id}
     @DeleteMapping("/usuario/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         usuarioService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    // --------- mapper privado ----------
     private UsuarioDto toDto(Usuario u) {
         return UsuarioDto.builder()
                 .id(u.getIdUsuario())

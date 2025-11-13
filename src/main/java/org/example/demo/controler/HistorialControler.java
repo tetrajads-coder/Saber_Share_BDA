@@ -41,30 +41,29 @@ public class HistorialControler {
             return ResponseEntity.badRequest().body(null); // "Usuario_idUsuario es requerido"
         }
 
-        // 1. Convertir DTO a Entidad
+
         Historial entidad = Historial.builder()
                 .fechapago(dto.getFechapago() != null ? LocalDate.parse(dto.getFechapago()) : null)
                 .pago(dto.getPago())
                 .usuario(Usuario.builder().idUsuario(dto.getUsuario_idUsuario()).build())
-                // Creamos los "stubs" (apuntadores) solo con el ID
+
                 .curso(dto.getCursoId() != null ? Curso.builder().idCurso(dto.getCursoId()).build() : null)
                 .servicio(dto.getServicioId() != null ? Servicio.builder().idServicios(dto.getServicioId()).build() : null)
                 .build();
 
-        // 2. Guardar la entidad
+
         Historial saved = historialService.save(entidad);
 
-        // 3. Convertir la entidad guardada a DTO para la respuesta
+
         HistorialDto dtoRespuesta = toDto(saved);
 
-        // 4. Retornar 201 Created
+
         return ResponseEntity
                 .created(URI.create("/Amaury/api/historial/" + saved.getIdHistorial()))
                 .body(dtoRespuesta);
     }
 
-    // Agregamos un helper "toDto" privado para que el POST lo use
-    // (Tu ServiceImpl tiene uno, pero es privado)
+
     private HistorialDto toDto(Historial h) {
         return HistorialDto.builder()
                 .idHistorial(h.getIdHistorial())
