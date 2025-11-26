@@ -2,6 +2,7 @@ package org.example.demo.controler;
 
 import lombok.AllArgsConstructor;
 import org.example.demo.dto.UsuarioDto;
+import org.example.demo.model.Rol;
 import org.example.demo.model.Usuario;
 import org.example.demo.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequestMapping("/Amaury/api")
+@RequestMapping("/Saber_Share/api")
 @RestController
 @AllArgsConstructor
 public class UsuarioControler {
@@ -20,7 +21,10 @@ public class UsuarioControler {
 
     @RequestMapping("/usuario")
     public ResponseEntity<List<UsuarioDto>> lista(
-            @RequestParam(name = "user", defaultValue = "", required = false) String user) {
+            // Agregamos el parametro 'correo' opcional
+            @RequestParam(name = "user", defaultValue = "", required = false) String user,
+            @RequestParam(name = "correo", defaultValue = "", required = false) String correo
+    ) {
 
         List<Usuario> usuarios = usuarioService.getAll();
         if (usuarios == null || usuarios.isEmpty()) {
@@ -30,6 +34,9 @@ public class UsuarioControler {
         var stream = usuarios.stream();
         if (user != null && !user.isEmpty()) {
             stream = stream.filter(u -> user.equals(u.getUsuUsu()));
+        }
+        if (correo != null && !correo.isEmpty()) {
+            stream = stream.filter(u -> correo.equals(u.getCorreoUsu()));
         }
 
         return ResponseEntity.ok(
@@ -46,6 +53,10 @@ public class UsuarioControler {
 
     @PostMapping("/usuario")
     public ResponseEntity<UsuarioDto> save(@RequestBody UsuarioDto dto) {
+        Rol rolPorDefecto = Rol.builder()
+                .idRol(1)
+                .nombre("USUARIO")
+                .build();
         Usuario u = Usuario.builder()
                 .usuUsu(dto.getUser())
                 .nomUsu(dto.getNombre())
@@ -53,6 +64,7 @@ public class UsuarioControler {
                 .correoUsu(dto.getCorreo())
                 .contraUsu(dto.getPassword())
                 .telUsu(dto.getTelefono())
+                .rol(rolPorDefecto)
                 .build();
         usuarioService.save(u);
         return ResponseEntity.ok(toDto(u));
@@ -80,6 +92,10 @@ public class UsuarioControler {
     }
 
     private UsuarioDto toDto(Usuario u) {
+        String nombreRol = "SIN_ROL";
+        if (u.getRol() != null && u.getRol().getNombre() != null) {
+            nombreRol = u.getRol().getNombre();
+        }
         return UsuarioDto.builder()
                 .id(u.getIdUsuario())
                 .user(u.getUsuUsu())
@@ -88,6 +104,7 @@ public class UsuarioControler {
                 .correo(u.getCorreoUsu())
                 .password(u.getContraUsu())
                 .telefono(u.getTelUsu())
+                .rol(nombreRol)
                 .build();
     }
 }

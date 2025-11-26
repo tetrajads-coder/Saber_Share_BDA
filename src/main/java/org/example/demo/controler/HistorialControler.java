@@ -15,7 +15,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
-@RequestMapping("/Amaury/api")
+@RequestMapping("/Saber_Share/api")
 @RestController
 @AllArgsConstructor
 public class HistorialControler {

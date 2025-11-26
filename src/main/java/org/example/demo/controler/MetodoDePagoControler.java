@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequestMapping("/Amaury/api")
+@RequestMapping("/Saber_Share/api")
 @RestController
 @AllArgsConstructor
 public class MetodoDePagoControler {

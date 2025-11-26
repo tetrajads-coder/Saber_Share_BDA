@@ -14,7 +14,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequestMapping("/Amaury/api")
+@RequestMapping("/Saber_Share/api")
 @RestController
 @AllArgsConstructor
 public class OpinionServicioControler {

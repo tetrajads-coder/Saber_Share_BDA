@@ -40,4 +40,8 @@ public class Usuario {
 
     @Column(name = "Tel_usu", length = 45)
     private String telUsu;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "Rol_idRol", nullable = false)
+    private Rol rol;
 }
