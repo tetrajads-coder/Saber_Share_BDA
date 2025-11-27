@@ -40,7 +40,7 @@ public class Servicio {
     @Column(name = "req_ser", nullable = false, length = 45)
     private String reqSer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "Usuario_idUsuario")
     private Usuario usuario;
 }

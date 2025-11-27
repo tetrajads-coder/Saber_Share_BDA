@@ -31,7 +31,7 @@ public class Curso {
     @Column(name = "Foto", length = 45)
     private String foto;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "Usuario_idUsuario")
     private Usuario usuario;
 }

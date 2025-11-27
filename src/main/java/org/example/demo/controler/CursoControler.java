@@ -19,7 +19,6 @@ public class CursoControler {
 
     private final CursoService cursoService;
 
-
     @GetMapping("/curso")
     public ResponseEntity<List<CursoDto>> lista() {
         List<Curso> cursos = cursoService.getAll();
@@ -30,7 +29,6 @@ public class CursoControler {
         );
     }
 
-
     @GetMapping("/curso/{id}")
     public ResponseEntity<CursoDto> getById(@PathVariable Integer id) {
         Curso c = cursoService.getById(id);
@@ -38,19 +36,19 @@ public class CursoControler {
         return ResponseEntity.ok(toDto(c));
     }
 
-
     @PostMapping("/curso")
     public ResponseEntity<CursoDto> save(@RequestBody CursoDto dto) {
-        if (dto.getUsuario_idUsuario() == null)
+        // Validación usando el nuevo nombre del campo
+        if (dto.getUsuarioId() == null)
             return ResponseEntity.badRequest().build();
 
         Curso entidad = Curso.builder()
-                .titCur(dto.getTit_cur())
-                .descCur(dto.getDesc_cur())
-                .preCur(dto.getPre_cur())
-                .calfCur(dto.getCalf_cur())
+                .titCur(dto.getTitulo())
+                .descCur(dto.getDescripcion()) // <--- Cambio aquí
+                .preCur(dto.getPrecio())       // <--- Cambio aquí
+                .calfCur(dto.getCalificacion())// <--- Cambio aquí
                 .foto(dto.getFoto())
-                .usuario(Usuario.builder().idUsuario(dto.getUsuario_idUsuario()).build())
+                .usuario(Usuario.builder().idUsuario(dto.getUsuarioId()).build())
                 .build();
 
         Curso saved = cursoService.save(entidad);
@@ -59,19 +57,18 @@ public class CursoControler {
                 .body(toDto(saved));
     }
 
-
     @PutMapping("/curso/{id}")
     public ResponseEntity<CursoDto> update(@PathVariable Integer id, @RequestBody CursoDto dto) {
-        if (dto.getUsuario_idUsuario() == null)
+        if (dto.getUsuarioId() == null)
             return ResponseEntity.badRequest().build();
 
         Curso cambios = Curso.builder()
-                .titCur(dto.getTit_cur())
-                .descCur(dto.getDesc_cur())
-                .preCur(dto.getPre_cur())
-                .calfCur(dto.getCalf_cur())
+                .titCur(dto.getTitulo())
+                .descCur(dto.getDescripcion())
+                .preCur(dto.getPrecio())
+                .calfCur(dto.getCalificacion())
                 .foto(dto.getFoto())
-                .usuario(Usuario.builder().idUsuario(dto.getUsuario_idUsuario()).build())
+                .usuario(Usuario.builder().idUsuario(dto.getUsuarioId()).build())
                 .build();
 
         Curso up = cursoService.update(id, cambios);
@@ -79,23 +76,27 @@ public class CursoControler {
         return ResponseEntity.ok(toDto(up));
     }
 
-
     @DeleteMapping("/curso/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         cursoService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-
     private CursoDto toDto(Curso c) {
+        String nombreAutor = "Desconocido";
+        if (c.getUsuario() != null) {
+            nombreAutor = c.getUsuario().getNomUsu() + " " + c.getUsuario().getApeUsu();
+        }
+
         return CursoDto.builder()
                 .idCurso(c.getIdCurso())
-                .tit_cur(c.getTitCur())
-                .desc_cur(c.getDescCur())
-                .pre_cur(c.getPreCur())
-                .calf_cur(c.getCalfCur())
-                .Foto(c.getFoto())
-                .usuario_idUsuario(c.getUsuario() != null ? c.getUsuario().getIdUsuario() : null)
+                .titulo(c.getTitCur())       // <--- Mapeo inverso
+                .descripcion(c.getDescCur())
+                .precio(c.getPreCur())
+                .calificacion(c.getCalfCur())
+                .foto(c.getFoto())
+                .usuarioId(c.getUsuario() != null ? c.getUsuario().getIdUsuario() : null)
+                .nombreUsuario(nombreAutor)
                 .build();
     }
 }

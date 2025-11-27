@@ -9,22 +9,12 @@ import lombok.*;
 @Builder
 public class CursoDto {
     private Integer idCurso;
+    private String titulo;
+    private String descripcion;
+    private Double precio;
+    private String calificacion;
+    private String foto;
+    private Integer usuarioId;
+    private String nombreUsuario;
 
-    @JsonProperty("tit_cur")
-    private String tit_cur;
-
-    @JsonProperty("desc_cur")
-    private String desc_cur;
-
-    @JsonProperty("pre_cur")
-    private Double pre_cur;
-
-    @JsonProperty("calf_cur")
-    private String calf_cur;
-
-    @JsonProperty("Foto")
-    private String Foto;
-
-    @JsonProperty("usuario_idUsuario")
-    private Integer usuario_idUsuario;
 }

@@ -28,21 +28,11 @@ public class ServicioControler
         {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity
-                .ok(
-                        servicios
-                                .stream()
-                                .map(s -> ServicioDto.builder()
-                                        .servicioId(s.getIdServicios())
-                                        .titulo(s.getTitSer())
-                                        .descripcion(s.getDescripcion())
-                                        .precio(s.getPrecioSer())
-                                        .requisitos(s.getReqSer())
-                                        .fecha(s.getFechaSer() != null ? s.getFechaSer().toString() : null)
-                                        .hora(s.getHora() != null ? s.getHora().toString() : null)
-                                        .usuarioId(s.getUsuario() != null ? s.getUsuario().getIdUsuario() : null)
-                                        .build())
-                                .collect(Collectors.toList()));
+        return ResponseEntity.ok(
+                servicios.stream()
+                        .map(this::toDto)
+                        .collect(Collectors.toList())
+        );
     }
 
     @RequestMapping("/servicio/{id}")
@@ -120,5 +110,24 @@ public class ServicioControler
                 .hora(s.getHora() != null ? s.getHora().toString() : null)
                 .usuarioId(s.getUsuario() != null ? s.getUsuario().getIdUsuario() : null)
                 .build());
+    }
+
+    private ServicioDto toDto(Servicio s) {
+        String nombreAutor = "Desconocido";
+        if (s.getUsuario() != null) {
+            nombreAutor = s.getUsuario().getNomUsu() + " " + s.getUsuario().getApeUsu();
+        }
+
+        return ServicioDto.builder()
+                .servicioId(s.getIdServicios())
+                .titulo(s.getTitSer())
+                .descripcion(s.getDescripcion())
+                .precio(s.getPrecioSer())
+                .requisitos(s.getReqSer())
+                .fecha(s.getFechaSer() != null ? s.getFechaSer().toString() : null)
+                .hora(s.getHora() != null ? s.getHora().toString() : null)
+                .usuarioId(s.getUsuario() != null ? s.getUsuario().getIdUsuario() : null)
+                .nombreUsuario(nombreAutor) // Incluimos el nombre del autor
+                .build();
     }
 }

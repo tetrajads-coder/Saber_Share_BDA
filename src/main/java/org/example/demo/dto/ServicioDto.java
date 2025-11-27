@@ -18,6 +18,7 @@ public class ServicioDto {
     private String  fecha;
     private String  hora;
     private Integer usuarioId;
+    private String nombreUsuario;
 }
 
 
