@@ -28,7 +28,7 @@ public class Curso {
     @Column(name = "calf_cur", length = 45)
     private String calfCur;
 
-    @Column(name = "Foto", length = 45)
+    @Column(name = "Foto", length = 500)
     private String foto;
 
     @ManyToOne(fetch = FetchType.EAGER)

@@ -38,22 +38,22 @@ public class CursoControler {
 
     @PostMapping("/curso")
     public ResponseEntity<CursoDto> save(@RequestBody CursoDto dto) {
-        // Validación usando el nuevo nombre del campo
+        // Usaren ti getUsuarioId() imbes a getUsuario_idUsuario()
         if (dto.getUsuarioId() == null)
             return ResponseEntity.badRequest().build();
 
         Curso entidad = Curso.builder()
-                .titCur(dto.getTitulo())
-                .descCur(dto.getDescripcion()) // <--- Cambio aquí
-                .preCur(dto.getPrecio())       // <--- Cambio aquí
-                .calfCur(dto.getCalificacion())// <--- Cambio aquí
-                .foto(dto.getFoto())
+                .titCur(dto.getTitulo())       // <--- Nagan manipud Android
+                .descCur(dto.getDescripcion())
+                .preCur(dto.getPrecio())
+                .calfCur(dto.getCalificacion())
+                .foto(dto.getFoto())           // <--- Daytoy ti 'path'
                 .usuario(Usuario.builder().idUsuario(dto.getUsuarioId()).build())
                 .build();
 
         Curso saved = cursoService.save(entidad);
         return ResponseEntity
-                .created(URI.create("/Amaury/api/curso/" + saved.getIdCurso()))
+                .created(URI.create("/Saber_Share/api/curso/" + saved.getIdCurso()))
                 .body(toDto(saved));
     }
 

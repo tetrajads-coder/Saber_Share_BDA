@@ -37,7 +37,7 @@ public class Servicio {
     @Column(name = "hora", nullable = false)
     private LocalTime hora;
 
-    @Column(name = "req_ser", nullable = false, length = 45)
+    @Column(name = "req_ser", nullable = false, length = 500)
     private String reqSer;
 
     @ManyToOne(fetch = FetchType.EAGER)

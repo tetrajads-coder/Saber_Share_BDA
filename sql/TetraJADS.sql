@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `TetraJADS`.`Curso` (
   `desc_cur` VARCHAR(350) NOT NULL,
   `pre_cur` DOUBLE NOT NULL,
   `calf_cur` VARCHAR(45) NOT NULL,
-  `Foto` VARCHAR(45) NULL DEFAULT NULL,
+  `Foto` VARCHAR(500) NULL DEFAULT NULL,
   `Usuario_idUsuario` INT NOT NULL,
   PRIMARY KEY (`idCurso`),
   CONSTRAINT `fk_Curso_Usuario1`
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `TetraJADS`.`Servicio` (
   `precio_ser` DOUBLE NOT NULL,
   `fecha_ser` DATE NOT NULL,
   `hora` TIME NOT NULL,
-  `req_ser` VARCHAR(45) NOT NULL,
+  `req_ser` VARCHAR(500) NOT NULL,
   `Usuario_idUsuario` INT NOT NULL,
   PRIMARY KEY (`idServicios`),
   CONSTRAINT `fk_Servicio_Usuario1`
