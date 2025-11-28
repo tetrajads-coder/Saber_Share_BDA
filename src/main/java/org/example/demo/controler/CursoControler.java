@@ -55,7 +55,7 @@ public class CursoControler {
         return ResponseEntity
                 .created(URI.create("/Saber_Share/api/curso/" + saved.getIdCurso()))
                 .body(toDto(saved));
-    }
+    }   
 
     @PutMapping("/curso/{id}")
     public ResponseEntity<CursoDto> update(@PathVariable Integer id, @RequestBody CursoDto dto) {
