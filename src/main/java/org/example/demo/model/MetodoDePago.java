@@ -17,19 +17,22 @@ public class MetodoDePago {
     @Column(name = "idMetodo_de_Pago")
     private Integer idMetodoDePago;
 
-    @Column(name = "compañia", length = 45)
+    @Column(name = "compañia", nullable = false, length = 45)
     private String compania;
 
-    @Column(name = "numtar", length = 25)
+    @Column(name = "numtar", nullable = false, length = 25)
     private String numtar;
 
-    @Column(name = "CVV", length = 15)
+    @Column(name = "CVV", nullable = false, length = 15)
     private String cvv;
 
-    @Column(name = "venci")
+    @Column(name = "venci", nullable = false)
     private LocalDate venci;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(name = "titular", nullable = false, length = 100) // <-- NUEVO
+    private String titular;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "Usuario_idUsuario")
     private Usuario usuario;
 }

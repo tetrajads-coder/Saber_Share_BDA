@@ -144,22 +144,26 @@ CREATE INDEX `fk_Historial_Curso1_idx` ON `TetraJADS`.`Historial` (`Curso_idCurs
 -- -----------------------------------------------------
 -- 7. Tabla Metodo_de_Pago
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `TetraJADS`.`Metodo_de_Pago`;
+
 CREATE TABLE IF NOT EXISTS `TetraJADS`.`Metodo_de_Pago` (
   `idMetodo_de_Pago` INT NOT NULL AUTO_INCREMENT,
   `compañia` VARCHAR(45) NOT NULL,
   `numtar` VARCHAR(25) NOT NULL,
   `CVV` VARCHAR(15) NOT NULL,
   `venci` DATE NOT NULL,
+  `titular` VARCHAR(100) NOT NULL, -- <--- CAMPO NUEVO AGREGA
   `Usuario_idUsuario` INT NOT NULL,
   PRIMARY KEY (`idMetodo_de_Pago`),
   CONSTRAINT `fk_Metodo_de_Pago_Usuario1`
     FOREIGN KEY (`Usuario_idUsuario`)
-    REFERENCES `TetraJADS`.`Usuario` (`idUsuario`))
+    REFERENCES `TetraJADS`.`Usuario` (`idUsuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 CREATE INDEX `fk_Metodo_de_Pago_Usuario1_idx` ON `TetraJADS`.`Metodo_de_Pago` (`Usuario_idUsuario` ASC) VISIBLE;
-
 -- -----------------------------------------------------
 -- 8. Tabla OpinionServicio
 -- -----------------------------------------------------

@@ -45,59 +45,48 @@ public class MetodoDePagoControler {
         return ResponseEntity.ok(toDto(m));
     }
 
-
     @PostMapping("/metodoPago")
     public ResponseEntity<MetodoDePagoDto> save(@RequestBody MetodoDePagoDto dto) {
-
         MetodoDePago m = MetodoDePago.builder()
                 .compania(dto.getCompania())
                 .numtar(dto.getNumeroTarjeta())
                 .cvv(dto.getCvv())
                 .venci(dto.getVencimiento() != null && !dto.getVencimiento().isEmpty()
-                        ? LocalDate.parse(dto.getVencimiento())
-                        : null)
+                        ? LocalDate.parse(dto.getVencimiento()) : null)
+                .titular(dto.getTitular())
                 .usuario(dto.getUsuarioId() != null
-                        ? Usuario.builder().idUsuario(dto.getUsuarioId()).build()
-                        : null)
+                        ? Usuario.builder().idUsuario(dto.getUsuarioId()).build() : null)
                 .build();
 
         metodoDePagoService.save(m);
-
         return ResponseEntity.ok(toDto(m));
     }
 
-
     @PutMapping("/metodoPago/{id}")
-    public ResponseEntity<MetodoDePagoDto> update(@PathVariable Integer id,
-                                                  @RequestBody MetodoDePagoDto dto) {
-
+    public ResponseEntity<MetodoDePagoDto> update(@PathVariable Integer id, @RequestBody MetodoDePagoDto dto) {
         MetodoDePago nuevo = MetodoDePago.builder()
                 .compania(dto.getCompania())
                 .numtar(dto.getNumeroTarjeta())
                 .cvv(dto.getCvv())
                 .venci(dto.getVencimiento() != null && !dto.getVencimiento().isEmpty()
-                        ? LocalDate.parse(dto.getVencimiento())
-                        : null)
+                        ? LocalDate.parse(dto.getVencimiento()) : null)
+                .titular(dto.getTitular())
                 .usuario(dto.getUsuarioId() != null
-                        ? Usuario.builder().idUsuario(dto.getUsuarioId()).build()
-                        : null)
+                        ? Usuario.builder().idUsuario(dto.getUsuarioId()).build() : null)
                 .build();
 
         MetodoDePago actualizado = metodoDePagoService.update(id, nuevo);
         if (actualizado == null) {
             return ResponseEntity.notFound().build();
         }
-
         return ResponseEntity.ok(toDto(actualizado));
     }
-
 
     @DeleteMapping("/metodoPago/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         metodoDePagoService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 
     private MetodoDePagoDto toDto(MetodoDePago m) {
         return MetodoDePagoDto.builder()
@@ -106,6 +95,7 @@ public class MetodoDePagoControler {
                 .numeroTarjeta(m.getNumtar())
                 .cvv(m.getCvv())
                 .vencimiento(m.getVenci() != null ? m.getVenci().toString() : null)
+                .titular(m.getTitular())
                 .usuarioId(m.getUsuario() != null ? m.getUsuario().getIdUsuario() : null)
                 .build();
     }

@@ -14,5 +14,6 @@ public class MetodoDePagoDto {
     private String numeroTarjeta;
     private String cvv;
     private String vencimiento;
+    private String titular;
     private Integer usuarioId;
 }
