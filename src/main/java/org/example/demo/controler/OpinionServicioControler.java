@@ -1,110 +1,122 @@
 package org.example.demo.controler;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.example.demo.dto.OpinionServicioDto;
-import org.example.demo.model.OpinionServicio;
-import org.example.demo.model.Servicio;
-import org.example.demo.model.Usuario;
 import org.example.demo.service.OpinionServicioService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
-@RequestMapping("/api")
+/**
+ * Endpoints para opiniones de servicios:
+ *
+ *   GET    /api/opinion_servicio                      → Listar todas
+ *   GET    /api/opinion_servicio/{id}                 → Obtener por ID
+ *   GET    /api/opinion_servicio/servicio/{servicioId}→ Por servicio (con promedio)
+ *   GET    /api/opinion_servicio/stats/{servicioId}   → Estadísticas y distribución
+ *   GET    /api/opinion_servicio/usuario/{usuarioId}  → Por usuario
+ *   POST   /api/opinion_servicio                      → Crear opinión
+ *   PUT    /api/opinion_servicio/{id}                 → Actualizar opinión
+ *   DELETE /api/opinion_servicio/{id}                 → Eliminar opinión
+ */
 @RestController
-@AllArgsConstructor
+@RequestMapping("/api/opinion_servicio")
+@RequiredArgsConstructor
 public class OpinionServicioControler {
 
     private final OpinionServicioService service;
 
-    @GetMapping("/opinion_servicio")
+    @GetMapping
     public ResponseEntity<List<OpinionServicioDto>> lista() {
-        List<OpinionServicio> opiniones = service.getAll();
+        // Reutiliza el método de obtener todas usando el service mejorado
+        List<OpinionServicioDto> opiniones = service.getAll()
+                .stream()
+                .map(o -> {
+                    OpinionServicioDto dto = new OpinionServicioDto();
+                    dto.setIdOpiniones(o.getIdOpiniones());
+                    dto.setComentOps(o.getComentOps());
+                    dto.setCalOps(o.getCalOps());
+                    dto.setServicioId(o.getServicio() != null ? o.getServicio().getIdServicios() : null);
+                    dto.setUsuarioId(o.getUsuario() != null ? o.getUsuario().getIdUsuario() : null);
+                    dto.setTituloServicio(o.getServicio() != null ? o.getServicio().getTitSer() : null);
+                    dto.setNombreUsuario(o.getUsuario() != null ?
+                            o.getUsuario().getNomUsu() + " " + o.getUsuario().getApeUsu() : null);
+                    dto.setFechaCreacion(o.getFechaCreacion());
+                    return dto;
+                })
+                .toList();
+
         if (opiniones.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(
-                opiniones.stream().map(this::toDto).collect(Collectors.toList())
-        );
+        return ResponseEntity.ok(opiniones);
     }
 
-    @GetMapping("/opinion_servicio/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<OpinionServicioDto> getById(@PathVariable Integer id) {
-        OpinionServicio opinion = service.getById(id);
-        if (opinion == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(toDto(opinion));
+        var opinion = service.getById(id);
+        if (opinion == null) return ResponseEntity.notFound().build();
+
+        OpinionServicioDto dto = new OpinionServicioDto();
+        dto.setIdOpiniones(opinion.getIdOpiniones());
+        dto.setComentOps(opinion.getComentOps());
+        dto.setCalOps(opinion.getCalOps());
+        dto.setServicioId(opinion.getServicio() != null ? opinion.getServicio().getIdServicios() : null);
+        dto.setUsuarioId(opinion.getUsuario() != null ? opinion.getUsuario().getIdUsuario() : null);
+        dto.setTituloServicio(opinion.getServicio() != null ? opinion.getServicio().getTitSer() : null);
+        dto.setNombreUsuario(opinion.getUsuario() != null ?
+                opinion.getUsuario().getNomUsu() + " " + opinion.getUsuario().getApeUsu() : null);
+        dto.setFechaCreacion(opinion.getFechaCreacion());
+        return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/opinion_servicio/servicio/{servicioId}")
+    @GetMapping("/servicio/{servicioId}")
     public ResponseEntity<List<OpinionServicioDto>> getByServicio(@PathVariable Integer servicioId) {
-        List<OpinionServicio> opiniones = service.findByServicio(servicioId);
-        if (opiniones.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(
-                opiniones.stream().map(this::toDto).collect(Collectors.toList())
-        );
+        List<OpinionServicioDto> opiniones = service.obtenerPorServicio(servicioId);
+        if (opiniones.isEmpty()) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(opiniones);
     }
 
-    @PostMapping("/opinion_servicio")
-    public ResponseEntity<OpinionServicioDto> save(@RequestBody OpinionServicioDto dto) {
-        if (dto.getUsuarioId() == null || dto.getServicioId() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        OpinionServicio entidad = toEntity(dto);
-        OpinionServicio saved = service.save(entidad);
-
-        return ResponseEntity
-                .created(URI.create("/api/opinion_servicio/" + saved.getIdOpiniones()))
-                .body(toDto(saved));
+    @GetMapping("/stats/{servicioId}")
+    public ResponseEntity<Map<String, Object>> estadisticas(@PathVariable Integer servicioId) {
+        return ResponseEntity.ok(service.obtenerEstadisticasServicio(servicioId));
     }
 
-    @PutMapping("/opinion_servicio/{id}")
-    public ResponseEntity<OpinionServicioDto> update(@PathVariable Integer id, @RequestBody OpinionServicioDto dto) {
-        if (dto.getUsuarioId() == null || dto.getServicioId() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        OpinionServicio cambios = toEntity(dto);
-        OpinionServicio updated = service.update(id, cambios);
-
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(toDto(updated));
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<OpinionServicioDto>> getByUsuario(@PathVariable Integer usuarioId) {
+        List<OpinionServicioDto> opiniones = service.obtenerPorUsuario(usuarioId);
+        if (opiniones.isEmpty()) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(opiniones);
     }
 
-    @DeleteMapping("/opinion_servicio/{id}")
+    @PostMapping
+    public ResponseEntity<?> save(@Valid @RequestBody OpinionServicioDto dto) {
+        try {
+            OpinionServicioDto creada = service.crearOpinion(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<OpinionServicioDto> update(
+            @PathVariable Integer id,
+            @Valid @RequestBody OpinionServicioDto dto) {
+        var updated = service.actualizarOpinion(id, dto);
+        if (updated == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        if (service.getById(id) == null) {
-            return ResponseEntity.notFound().build();
-        }
-        service.delete(id);
+        if (service.getById(id) == null) return ResponseEntity.notFound().build();
+        service.eliminarOpinion(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private OpinionServicioDto toDto(OpinionServicio o) {
-        return OpinionServicioDto.builder()
-                .id(o.getIdOpiniones())
-                .comentario(o.getComentOps())
-                .calificacion(o.getCalOps())
-                .usuarioId(o.getUsuario() != null ? o.getUsuario().getIdUsuario() : null)
-                .servicioId(o.getServicio() != null ? o.getServicio().getIdServicios() : null)
-                .build();
-    }
-
-    private OpinionServicio toEntity(OpinionServicioDto dto) {
-        return OpinionServicio.builder()
-                .comentOps(dto.getComentario())
-                .calOps(dto.getCalificacion())
-                .usuario(Usuario.builder().idUsuario(dto.getUsuarioId()).build())
-                .servicio(Servicio.builder().idServicios(dto.getServicioId()).build())
-                .build();
     }
 }

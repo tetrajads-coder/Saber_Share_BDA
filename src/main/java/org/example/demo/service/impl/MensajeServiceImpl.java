@@ -1,116 +1,99 @@
 package org.example.demo.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.example.demo.dto.ConversacionDto;
 import org.example.demo.dto.MensajeCreateDto;
 import org.example.demo.dto.MensajeDto;
+import org.example.demo.model.Mensaje;
+import org.example.demo.model.Usuario;
+import org.example.demo.repository.MensajeRepository;
+import org.example.demo.repository.UsuarioRepository;
 import org.example.demo.service.MensajeService;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class MensajeServiceImpl implements MensajeService {
 
-    private final JdbcTemplate jdbc;
-
-    public MensajeServiceImpl(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+    private final MensajeRepository mensajeRepo;
+    private final UsuarioRepository usuarioRepo;
 
     @Override
+    @Transactional
     public MensajeDto enviar(MensajeCreateDto dto) {
-        jdbc.update(
-                "INSERT INTO Mensaje(contenido, emisorId, receptorId, leido) VALUES(?,?,?,0)",
-                dto.getContenido(), dto.getEmisorId(), dto.getReceptorId()
-        );
+        Usuario emisor = usuarioRepo.findById(dto.getEmisorId())
+                .orElseThrow(() -> new RuntimeException("Emisor no encontrado: " + dto.getEmisorId()));
+        Usuario receptor = usuarioRepo.findById(dto.getReceptorId())
+                .orElseThrow(() -> new RuntimeException("Receptor no encontrado: " + dto.getReceptorId()));
 
+        if (dto.getEmisorId().equals(dto.getReceptorId())) {
+            throw new IllegalArgumentException("No puedes enviarte mensajes a ti mismo");
+        }
 
-        Integer id = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
+        Mensaje mensaje = Mensaje.builder()
+                .contenido(dto.getContenido())
+                .emisor(emisor)
+                .receptor(receptor)
+                .leido(false)
+                .build();
 
-        return jdbc.queryForObject(
-                "SELECT idMensaje, emisorId, receptorId, contenido, fechaEnvio, leido FROM Mensaje WHERE idMensaje=?",
-                (rs, rowNum) -> {
-                    MensajeDto m = new MensajeDto();
-                    m.setIdMensaje(rs.getInt("idMensaje"));
-                    m.setEmisorId(rs.getInt("emisorId"));
-                    m.setReceptorId(rs.getInt("receptorId"));
-                    m.setContenido(rs.getString("contenido"));
-                    m.setFechaEnvio(rs.getTimestamp("fechaEnvio").toString());
-                    m.setLeido(rs.getBoolean("leido"));
-                    return m;
-                },
-                id
-        );
+        return toDto(mensajeRepo.save(mensaje));
     }
 
     @Override
+    @Transactional
     public List<MensajeDto> conversacion(int user1, int user2) {
-        return jdbc.query(
-                """
-                SELECT idMensaje, emisorId, receptorId, contenido, fechaEnvio, leido
-                FROM Mensaje
-                WHERE (emisorId=? AND receptorId=?) OR (emisorId=? AND receptorId=?)
-                ORDER BY fechaEnvio ASC
-                """,
-                (rs, rowNum) -> {
-                    MensajeDto m = new MensajeDto();
-                    m.setIdMensaje(rs.getInt("idMensaje"));
-                    m.setEmisorId(rs.getInt("emisorId"));
-                    m.setReceptorId(rs.getInt("receptorId"));
-                    m.setContenido(rs.getString("contenido"));
-                    m.setFechaEnvio(rs.getTimestamp("fechaEnvio").toString());
-                    m.setLeido(rs.getBoolean("leido"));
-                    return m;
-                },
-                user1, user2, user2, user1
-        );
+        // Al abrir la conversación, marcar como leídos los mensajes de user2 hacia user1
+        mensajeRepo.marcarComoLeidos(user1, user2);
+        return mensajeRepo.findConversacion(user1, user2)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<ConversacionDto> inbox(int userId) {
-        // MySQL 8+: usamos window function para sacar el ultimo mensaje por "otroId"
-        return jdbc.query(
-                """
-                SELECT x.otroId,
-                       CONCAT(u.Nom_usu,' ',u.Ape_usu) AS otroNombre,
-                       x.contenido AS ultimoMensaje,
-                       x.fechaEnvio AS fechaUltimo,
-                       (
-                         SELECT COUNT(*)
-                         FROM Mensaje m2
-                         WHERE m2.receptorId = ?
-                           AND m2.emisorId = x.otroId
-                           AND m2.leido = 0
-                       ) AS noLeidos
-                FROM (
-                    SELECT
-                        CASE WHEN m.emisorId = ? THEN m.receptorId ELSE m.emisorId END AS otroId,
-                        m.contenido,
-                        m.fechaEnvio,
-                        ROW_NUMBER() OVER (
-                            PARTITION BY CASE WHEN m.emisorId = ? THEN m.receptorId ELSE m.emisorId END
-                            ORDER BY m.fechaEnvio DESC
-                        ) AS rn
-                    FROM Mensaje m
-                    WHERE m.emisorId = ? OR m.receptorId = ?
-                ) x
-                JOIN Usuario u ON u.idUsuario = x.otroId
-                WHERE x.rn = 1
-                ORDER BY x.fechaEnvio DESC
-                """,
-                (rs, rowNum) -> {
-                    int otroId = rs.getInt("otroId");
-                    String otroNombre = rs.getString("otroNombre");
-                    String ultimoMensaje = rs.getString("ultimoMensaje");
-                    Timestamp ts = rs.getTimestamp("fechaUltimo");
-                    LocalDateTime fechaUltimo = ts != null ? ts.toLocalDateTime() : null;
-                    int noLeidos = rs.getInt("noLeidos");
-                    return new ConversacionDto(otroId, otroNombre, ultimoMensaje, fechaUltimo, noLeidos);
-                },
-                userId, userId, userId, userId, userId
+        return mensajeRepo.findUltimosMensajesPorUsuario(userId)
+                .stream()
+                .map(m -> {
+                    // El "otro" usuario es el que no soy yo
+                    boolean soyEmisor = m.getEmisor().getIdUsuario().equals(userId);
+                    Usuario otro = soyEmisor ? m.getReceptor() : m.getEmisor();
+
+                    int noLeidos = mensajeRepo.countNoLeidos(userId, otro.getIdUsuario());
+
+                    return new ConversacionDto(
+                            otro.getIdUsuario(),
+                            otro.getNomUsu() + " " + otro.getApeUsu(),
+                            m.getContenido(),
+                            m.getFechaEnvio(),
+                            noLeidos
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void marcarLeidos(int receptorId, int emisorId) {
+        mensajeRepo.marcarComoLeidos(receptorId, emisorId);
+    }
+
+    // ─── Mapper ───────────────────────────────────────────────────────────────
+    private MensajeDto toDto(Mensaje m) {
+        return new MensajeDto(
+                m.getIdMensaje(),
+                m.getContenido(),
+                m.getFechaEnvio(),
+                m.getEmisor().getIdUsuario(),
+                m.getEmisor().getNomUsu() + " " + m.getEmisor().getApeUsu(),
+                m.getReceptor().getIdUsuario(),
+                m.getReceptor().getNomUsu() + " " + m.getReceptor().getApeUsu(),
+                m.getLeido()
         );
     }
 }

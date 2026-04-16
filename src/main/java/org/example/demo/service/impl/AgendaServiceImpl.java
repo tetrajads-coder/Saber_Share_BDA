@@ -22,45 +22,32 @@ public class AgendaServiceImpl implements AgendaService {
     @Transactional(readOnly = true)
     public List<AgendaDto> getDtoByServicio(Integer servicioId) {
         return repo.findByServicio_IdServicios(servicioId)
-                .stream()
-                .map(this::toDto)
-                .toList();
+                .stream().map(this::toDto).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AgendaDto> getDtoByProfesor(Integer profesorId) {
         return repo.findByProfesor_IdUsuario(profesorId)
-                .stream()
-                .map(this::toDto)
-                .toList();
+                .stream().map(this::toDto).toList();
     }
 
     @Override
     public Agenda save(Agenda agenda) {
-        // Validaciones basicas (por los NOT NULL)
-        if (agenda.getProfesor() == null || agenda.getProfesor().getIdUsuario() == null) {
+        if (agenda.getProfesor() == null || agenda.getProfesor().getIdUsuario() == null)
             throw new IllegalArgumentException("profesorId es obligatorio");
-        }
-        if (agenda.getServicio() == null || agenda.getServicio().getIdServicios() == null) {
+        if (agenda.getServicio() == null || agenda.getServicio().getIdServicios() == null)
             throw new IllegalArgumentException("servicioId es obligatorio");
-        }
-        if (agenda.getFecha() == null) {
+        if (agenda.getFecha() == null)
             throw new IllegalArgumentException("fecha es obligatoria");
-        }
-        if (agenda.getHora() == null) {
+        if (agenda.getHora() == null)
             throw new IllegalArgumentException("hora es obligatoria");
-        }
 
-        // default si no viene estado
-        if (agenda.getEstado() == null || agenda.getEstado().isBlank()) {
+        if (agenda.getEstado() == null || agenda.getEstado().isBlank())
             agenda.setEstado("DISPONIBLE");
-        }
 
-        // Al crear slot normalmente no hay alumno
-        if ("DISPONIBLE".equalsIgnoreCase(agenda.getEstado())) {
+        if ("DISPONIBLE".equalsIgnoreCase(agenda.getEstado()))
             agenda.setAlumno(null);
-        }
 
         return repo.save(agenda);
     }
@@ -69,15 +56,18 @@ public class AgendaServiceImpl implements AgendaService {
     public Agenda reservar(Integer idAgenda, Integer idAlumno) {
         Agenda slot = repo.findById(idAgenda).orElse(null);
         if (slot == null) return null;
-
-        // Si ya esta reservado, no sobreescribas
-        if ("RESERVADA".equalsIgnoreCase(slot.getEstado()) || slot.getAlumno() != null) {
+        if ("RESERVADA".equalsIgnoreCase(slot.getEstado()) || slot.getAlumno() != null)
             return slot;
-        }
-
         slot.setEstado("RESERVADA");
         slot.setAlumno(Usuario.builder().idUsuario(idAlumno).build());
         return repo.save(slot);
+    }
+
+    @Override
+    public void delete(Integer idAgenda) {
+        if (!repo.existsById(idAgenda))
+            throw new RuntimeException("Agenda no encontrada: " + idAgenda);
+        repo.deleteById(idAgenda);
     }
 
     @Override
@@ -85,7 +75,7 @@ public class AgendaServiceImpl implements AgendaService {
     public AgendaDto toDto(Agenda a) {
         String nombreAlumno = null;
         if (a.getAlumno() != null) {
-            String n = a.getAlumno().getNomUsu() != null ? a.getAlumno().getNomUsu() : "";
+            String n  = a.getAlumno().getNomUsu() != null ? a.getAlumno().getNomUsu() : "";
             String ap = a.getAlumno().getApeUsu() != null ? a.getAlumno().getApeUsu() : "";
             nombreAlumno = (n + " " + ap).trim();
             if (nombreAlumno.isEmpty()) nombreAlumno = null;
@@ -93,13 +83,13 @@ public class AgendaServiceImpl implements AgendaService {
 
         return AgendaDto.builder()
                 .idAgenda(a.getIdAgenda())
-                .fecha(a.getFecha() != null ? a.getFecha().toString() : null)     // yyyy-MM-dd
-                .hora(a.getHora() != null ? a.getHora().toString() : null)        // HH:mm:ss
+                .fecha(a.getFecha() != null ? a.getFecha().toString() : null)
+                .hora(a.getHora()   != null ? a.getHora().toString()  : null)
                 .estado(a.getEstado())
                 .servicioId(a.getServicio() != null ? a.getServicio().getIdServicios() : null)
-                .profesorId(a.getProfesor() != null ? a.getProfesor().getIdUsuario() : null)
-                .alumnoId(a.getAlumno() != null ? a.getAlumno().getIdUsuario() : null)
-                .tituloServicio(a.getServicio() != null ? a.getServicio().getTitSer() : null)
+                .profesorId(a.getProfesor() != null ? a.getProfesor().getIdUsuario()   : null)
+                .alumnoId(a.getAlumno()     != null ? a.getAlumno().getIdUsuario()     : null)
+                .tituloServicio(a.getServicio() != null ? a.getServicio().getTitSer()  : null)
                 .nombreAlumno(nombreAlumno)
                 .build();
     }

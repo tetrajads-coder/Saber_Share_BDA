@@ -2,6 +2,9 @@ package org.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -16,7 +19,7 @@ public class OpinionServicio {
     @Column(name = "idOpiniones")
     private Integer idOpiniones;
 
-    @Column(name = "coment_ops", length = 255)
+    @Column(name = "coment_ops", length = 500)
     private String comentOps;
 
     @Column(name = "cal_ops")
@@ -29,5 +32,9 @@ public class OpinionServicio {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Servicio_Servicios")
     private Servicio servicio;
-}
 
+    // ✅ Campo nuevo — asegúrate de haber ejecutado el SQL de migración
+    @CreationTimestamp
+    @Column(name = "fecha_creacion", updatable = false)
+    private LocalDateTime fechaCreacion;
+}

@@ -15,5 +15,7 @@ public interface AgendaService {
 
     Agenda reservar(Integer idAgenda, Integer idAlumno);
 
+    void delete(Integer idAgenda);
+
     AgendaDto toDto(Agenda a);
 }

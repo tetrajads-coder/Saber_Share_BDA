@@ -1,110 +1,70 @@
 package org.example.demo.controler;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.example.demo.dto.OpinionesCursoDto;
-import org.example.demo.model.Curso;
-import org.example.demo.model.OpinionesCurso;
-import org.example.demo.model.Usuario;
 import org.example.demo.service.OpinionesCursoService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
-@RequestMapping("/api")
+/**
+ * Controlador mejorado para calificaciones de cursos.
+ *
+ * Endpoints:
+ *   POST   /api/opiniones/cursos              → Crear calificación
+ *   GET    /api/opiniones/cursos/{cursoId}     → Ver todas las del curso
+ *   GET    /api/opiniones/cursos/stats/{id}    → Promedio + distribución estrellas
+ *   GET    /api/opiniones/cursos/usuario/{id}  → Calificaciones de un usuario
+ *   PUT    /api/opiniones/cursos/{id}          → Editar calificación
+ *   DELETE /api/opiniones/cursos/{id}          → Eliminar calificación
+ */
 @RestController
-@AllArgsConstructor
+@RequestMapping("/api/opiniones/cursos")
+@RequiredArgsConstructor
 public class OpinionesCursoControler {
 
-    private final OpinionesCursoService service;
+    private final OpinionesCursoService opinionService;
 
-    @GetMapping("/opiniones_curso")
-    public ResponseEntity<List<OpinionesCursoDto>> lista() {
-        List<OpinionesCurso> opiniones = service.getAll();
-        if (opiniones.isEmpty()) {
-            return ResponseEntity.notFound().build();
+    @PostMapping
+    public ResponseEntity<?> crear(@Valid @RequestBody OpinionesCursoDto dto) {
+        try {
+            OpinionesCursoDto creada = opinionService.crearOpinion(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
         }
-        return ResponseEntity.ok(
-                opiniones.stream().map(this::toDto).collect(Collectors.toList())
-        );
     }
 
-    @GetMapping("/opiniones_curso/{id}")
-    public ResponseEntity<OpinionesCursoDto> getById(@PathVariable Integer id) {
-        OpinionesCurso opinion = service.getById(id);
-        if (opinion == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(toDto(opinion));
+    @GetMapping("/{cursoId}")
+    public ResponseEntity<List<OpinionesCursoDto>> porCurso(@PathVariable Integer cursoId) {
+        return ResponseEntity.ok(opinionService.obtenerPorCurso(cursoId));
     }
 
-    @GetMapping("/opiniones_curso/curso/{cursoId}")
-    public ResponseEntity<List<OpinionesCursoDto>> getByCurso(@PathVariable Integer cursoId) {
-        List<OpinionesCurso> opiniones = service.findByCurso(cursoId);
-        if (opiniones.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(
-                opiniones.stream().map(this::toDto).collect(Collectors.toList())
-        );
+    @GetMapping("/stats/{cursoId}")
+    public ResponseEntity<Map<String, Object>> estadisticas(@PathVariable Integer cursoId) {
+        return ResponseEntity.ok(opinionService.obtenerEstadisticasCurso(cursoId));
     }
 
-    @PostMapping("/opiniones_curso")
-    public ResponseEntity<OpinionesCursoDto> save(@RequestBody OpinionesCursoDto dto) {
-        if (dto.getUsuarioId() == null || dto.getCursoId() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        OpinionesCurso entidad = toEntity(dto);
-        OpinionesCurso saved = service.save(entidad);
-
-        return ResponseEntity
-                .created(URI.create("/api/opiniones_curso/" + saved.getIdOpiniones()))
-                .body(toDto(saved));
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<OpinionesCursoDto>> porUsuario(@PathVariable Integer usuarioId) {
+        return ResponseEntity.ok(opinionService.obtenerPorUsuario(usuarioId));
     }
 
-    @PutMapping("/opiniones_curso/{id}")
-    public ResponseEntity<OpinionesCursoDto> update(@PathVariable Integer id, @RequestBody OpinionesCursoDto dto) {
-        if (dto.getUsuarioId() == null || dto.getCursoId() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        OpinionesCurso cambios = toEntity(dto);
-        OpinionesCurso updated = service.update(id, cambios);
-
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(toDto(updated));
+    @PutMapping("/{id}")
+    public ResponseEntity<OpinionesCursoDto> actualizar(
+            @PathVariable Integer id,
+            @Valid @RequestBody OpinionesCursoDto dto) {
+        return ResponseEntity.ok(opinionService.actualizarOpinion(id, dto));
     }
 
-    @DeleteMapping("/opiniones_curso/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        if (service.getById(id) == null) {
-            return ResponseEntity.notFound().build();
-        }
-        service.delete(id);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
+        opinionService.eliminarOpinion(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private OpinionesCursoDto toDto(OpinionesCurso o) {
-        return OpinionesCursoDto.builder()
-                .id(o.getIdOpiniones())
-                .comentario(o.getComentOps())
-                .calificacion(o.getCalOps())
-                .usuarioId(o.getUsuario() != null ? o.getUsuario().getIdUsuario() : null)
-                .cursoId(o.getCurso() != null ? o.getCurso().getIdCurso() : null)
-                .build();
-    }
-
-    private OpinionesCurso toEntity(OpinionesCursoDto dto) {
-        return OpinionesCurso.builder()
-                .comentOps(dto.getComentario())
-                .calOps(dto.getCalificacion())
-                .usuario(Usuario.builder().idUsuario(dto.getUsuarioId()).build())
-                .curso(Curso.builder().idCurso(dto.getCursoId()).build())
-                .build();
     }
 }

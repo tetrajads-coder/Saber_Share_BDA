@@ -12,46 +12,41 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/usuario")
 @AllArgsConstructor
 public class UsuarioControler {
 
     private final UsuarioService usuarioService;
 
-    @GetMapping("/usuario")
+    // GET /api/usuario?user=xxx  o  /api/usuario?correo=xxx
+    @GetMapping
     public ResponseEntity<List<UsuarioDto>> lista(
-            @RequestParam(name = "user", defaultValue = "", required = false) String user,
+            @RequestParam(name = "user",   defaultValue = "", required = false) String user,
             @RequestParam(name = "correo", defaultValue = "", required = false) String correo
     ) {
         List<Usuario> usuarios = usuarioService.getAll();
-        if (usuarios == null || usuarios.isEmpty()) {
+        if (usuarios == null || usuarios.isEmpty())
             return ResponseEntity.notFound().build();
-        }
 
         var stream = usuarios.stream();
-        if (user != null && !user.isEmpty()) {
-            stream = stream.filter(u -> user.equals(u.getUsuUsu()));
-        }
-        if (correo != null && !correo.isEmpty()) {
-            stream = stream.filter(u -> correo.equals(u.getCorreoUsu()));
-        }
+        if (!user.isEmpty())   stream = stream.filter(u -> user.equals(u.getUsuUsu()));
+        if (!correo.isEmpty()) stream = stream.filter(u -> correo.equals(u.getCorreoUsu()));
 
         return ResponseEntity.ok(stream.map(this::toDto).collect(Collectors.toList()));
     }
 
-    @GetMapping("/usuario/{id}")
+    // GET /api/usuario/{id}
+    @GetMapping("/{id}")
     public ResponseEntity<UsuarioDto> getById(@PathVariable Integer id) {
         Usuario u = usuarioService.getById(id);
         if (u == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(toDto(u));
     }
 
-    @PostMapping("/usuario")
+    // POST /api/usuario
+    @PostMapping
     public ResponseEntity<UsuarioDto> save(@RequestBody UsuarioDto dto) {
-        Rol rolPorDefecto = Rol.builder()
-                .idRol(1)
-                .nombre("USUARIO")
-                .build();
+        Rol rolPorDefecto = Rol.builder().idRol(1).nombre("USUARIO").build();
 
         Usuario u = Usuario.builder()
                 .usuUsu(dto.getUser())
@@ -67,8 +62,10 @@ public class UsuarioControler {
         return ResponseEntity.ok(toDto(u));
     }
 
-    @PutMapping("/usuario/{id}")
-    public ResponseEntity<UsuarioDto> update(@PathVariable Integer id, @RequestBody UsuarioDto dto) {
+    // PUT /api/usuario/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioDto> update(@PathVariable Integer id,
+                                             @RequestBody UsuarioDto dto) {
         Usuario up = usuarioService.update(id, Usuario.builder()
                 .usuUsu(dto.getUser())
                 .nomUsu(dto.getNombre())
@@ -82,7 +79,8 @@ public class UsuarioControler {
         return ResponseEntity.ok(toDto(up));
     }
 
-    @DeleteMapping("/usuario/{id}")
+    // DELETE /api/usuario/{id}
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         usuarioService.delete(id);
         return ResponseEntity.noContent().build();
@@ -90,9 +88,9 @@ public class UsuarioControler {
 
     private UsuarioDto toDto(Usuario u) {
         String nombreRol = "SIN_ROL";
-        if (u.getRol() != null && u.getRol().getNombre() != null) {
+        if (u.getRol() != null && u.getRol().getNombre() != null)
             nombreRol = u.getRol().getNombre();
-        }
+
         return UsuarioDto.builder()
                 .id(u.getIdUsuario())
                 .user(u.getUsuUsu())

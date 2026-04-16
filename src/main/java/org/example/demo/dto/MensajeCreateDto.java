@@ -1,24 +1,20 @@
 package org.example.demo.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
 public class MensajeCreateDto {
-    private int emisorId;
-    private int receptorId;
+
+    @NotNull(message = "El emisor es obligatorio")
+    private Integer emisorId;
+
+    @NotNull(message = "El receptor es obligatorio")
+    private Integer receptorId;
+
+    @NotBlank(message = "El contenido no puede estar vacío")
+    @Size(max = 500, message = "El mensaje no puede superar los 500 caracteres")
     private String contenido;
-
-    public MensajeCreateDto() {}
-
-    public MensajeCreateDto(int emisorId, int receptorId, String contenido) {
-        this.emisorId = emisorId;
-        this.receptorId = receptorId;
-        this.contenido = contenido;
-    }
-
-    public int getEmisorId() { return emisorId; }
-    public void setEmisorId(int emisorId) { this.emisorId = emisorId; }
-
-    public int getReceptorId() { return receptorId; }
-    public void setReceptorId(int receptorId) { this.receptorId = receptorId; }
-
-    public String getContenido() { return contenido; }
-    public void setContenido(String contenido) { this.contenido = contenido; }
 }
