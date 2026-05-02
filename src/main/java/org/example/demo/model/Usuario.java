@@ -28,7 +28,7 @@ public class Usuario {
     @Column(name = "Correo_usu", length = 45)
     private String correoUsu;
 
-    @Column(name = "Contra_usu", length = 45)
+    @Column(name = "Contra_usu", length = 255)
     private String contraUsu;
 
     @Lob

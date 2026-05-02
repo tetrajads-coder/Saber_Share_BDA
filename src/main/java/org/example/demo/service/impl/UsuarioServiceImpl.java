@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.example.demo.model.Usuario;
 import org.example.demo.repository.UsuarioRepository;
 import org.example.demo.service.UsuarioService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<Usuario> getAll() {
@@ -41,16 +43,23 @@ public class UsuarioServiceImpl implements UsuarioService {
             return null;
         }
 
-        // Se actualizan solo los campos de tu tabla Usuario
         aux.setUsuUsu(usuario.getUsuUsu());
         aux.setNomUsu(usuario.getNomUsu());
         aux.setApeUsu(usuario.getApeUsu());
         aux.setCorreoUsu(usuario.getCorreoUsu());
-        aux.setContraUsu(usuario.getContraUsu());
+        // Solo actualizar contraseña si viene un valor no vacío
+        if (usuario.getContraUsu() != null && !usuario.getContraUsu().isBlank()) {
+            aux.setContraUsu(passwordEncoder.encode(usuario.getContraUsu()));
+        }
         aux.setFotUsu(usuario.getFotUsu());
         aux.setInteUsu(usuario.getInteUsu());
         aux.setTelUsu(usuario.getTelUsu());
 
         return usuarioRepository.save(aux);
+    }
+
+    @Override
+    public Usuario findByCorreo(String correo) {
+        return usuarioRepository.findByCorreoUsu(correo).orElse(null);
     }
 }

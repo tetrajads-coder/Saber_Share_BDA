@@ -6,9 +6,11 @@ import org.example.demo.model.Rol;
 import org.example.demo.model.Usuario;
 import org.example.demo.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 public class UsuarioControler {
 
     private final UsuarioService usuarioService;
+    private final PasswordEncoder passwordEncoder;
 
     // GET /api/usuario?user=xxx  o  /api/usuario?correo=xxx
     @GetMapping
@@ -45,7 +48,12 @@ public class UsuarioControler {
 
     // POST /api/usuario
     @PostMapping
-    public ResponseEntity<UsuarioDto> save(@RequestBody UsuarioDto dto) {
+    public ResponseEntity<?> save(@RequestBody UsuarioDto dto) {
+        if (usuarioService.findByCorreo(dto.getCorreo()) != null) {
+            return ResponseEntity.status(409)
+                    .body(Map.of("mensaje", "El correo ya está registrado"));
+        }
+
         Rol rolPorDefecto = Rol.builder().idRol(1).nombre("USUARIO").build();
 
         Usuario u = Usuario.builder()
@@ -53,7 +61,7 @@ public class UsuarioControler {
                 .nomUsu(dto.getNombre())
                 .apeUsu(dto.getApellido())
                 .correoUsu(dto.getCorreo())
-                .contraUsu(dto.getPassword())
+                .contraUsu(passwordEncoder.encode(dto.getPassword()))
                 .telUsu(dto.getTelefono())
                 .rol(rolPorDefecto)
                 .build();

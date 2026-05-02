@@ -1,6 +1,5 @@
 package org.example.demo.service;
 
-import org.example.demo.model.Servicio;
 import org.example.demo.model.Usuario;
 
 import java.util.List;
@@ -11,4 +10,5 @@ public interface UsuarioService {
     Usuario save(Usuario usuario);
     void delete(Integer id);
     Usuario update(Integer id, Usuario usuario);
+    Usuario findByCorreo(String correo);
 }
