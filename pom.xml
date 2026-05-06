@@ -91,6 +91,13 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <!-- ── Gemini / OkHttp ───────────────────────────────── -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
+
         <!-- ── JWT (JJWT 0.11.5) ──────────────────────────────── -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

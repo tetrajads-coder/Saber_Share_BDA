@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/recuperar").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/chat").permitAll()
                 // Todos los GET abiertos para compatibilidad con Android/iOS
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
                 // Todo lo demás requiere JWT válido
