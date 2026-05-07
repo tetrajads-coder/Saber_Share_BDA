@@ -19,34 +19,38 @@ public class DatabaseInitializer {
             final JdbcTemplate jdbcTemplate) {
 
         return args -> {
-            // Revisa si ya existe algún dato en la tabla principal (Usuario)
-            if (usuarioRepository.count() > 0) {
-                logger.info("La base de datos ya contiene datos. No se reiniciarán los contadores.");
-            } else {
-                // Si no hay datos, significa que es una BD nueva o vacía.
-                logger.warn("¡Base de datos vacía detectada! Reiniciando contadores de todas las tablas.");
+            try {
+                // Revisa si ya existe algún dato en la tabla principal (Usuario)
+                if (usuarioRepository.count() > 0) {
+                    logger.info("La base de datos ya contiene datos. No se reiniciarán los contadores.");
+                } else {
+                    // Si no hay datos, significa que es una BD nueva o vacía.
+                    logger.warn("¡Base de datos vacía detectada! Reiniciando contadores de todas las tablas.");
 
-                String[] tablesToTruncate = {
-                        "Agenda",
-                        "Curso",
-                        "Historial",
-                        "Metodo_de_Pago",
-                        "OpinionServicio",
-                        "OpinionesCurso",
-                        "Servicio",
-                        "Usuario"
-                };
+                    String[] tablesToTruncate = {
+                            "Agenda",
+                            "Curso",
+                            "Historial",
+                            "Metodo_de_Pago",
+                            "OpinionServicio",
+                            "OpinionesCurso",
+                            "Servicio",
+                            "Usuario"
+                    };
 
-                // Desactiva llaves foráneas, trunca tablas y reactiva llaves
-                jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0;");
+                    // Desactiva llaves foráneas, trunca tablas y reactiva llaves
+                    jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0;");
 
-                for (String table : tablesToTruncate) {
-                    logger.info("Truncando tabla: " + table);
-                    jdbcTemplate.execute("TRUNCATE TABLE " + table);
+                    for (String table : tablesToTruncate) {
+                        logger.info("Truncando tabla: " + table);
+                        jdbcTemplate.execute("TRUNCATE TABLE " + table);
+                    }
+
+                    jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1;");
+                    logger.info("Reinicio de base de datos completado.");
                 }
-
-                jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1;");
-                logger.info("Reinicio de base de datos completado.");
+            } catch (Exception e) {
+                logger.error("Error durante la inicialización de la base de datos, la aplicación continuará: {}", e.getMessage());
             }
         };
     }
