@@ -16,7 +16,7 @@ public interface HistorialService {
 
     List<HistorialDto> getAllDtoByCurso(Integer cursoId);
 
+    List<HistorialDto> getAllDtoByVendedor(Integer vendedorId);
 
-    // ÚNICO save
     Historial save(Historial historial);
 }

@@ -43,6 +43,11 @@ public class HistorialControler {
         return ResponseEntity.ok(historialService.getAllDtoByUsuario(usuarioId));
     }
 
+    @GetMapping("/vendedor/{vendedorId}")
+    public ResponseEntity<List<HistorialDto>> getByVendedor(@PathVariable Integer vendedorId) {
+        return ResponseEntity.ok(historialService.getAllDtoByVendedor(vendedorId));
+    }
+
     @PostMapping
     public ResponseEntity<HistorialDto> save(@RequestBody HistorialDto dto) {
         if (dto.getUsuario_idUsuario() == null) {

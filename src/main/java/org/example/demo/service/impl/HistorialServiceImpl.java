@@ -53,6 +53,15 @@ public class HistorialServiceImpl implements HistorialService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<HistorialDto> getAllDtoByVendedor(Integer vendedorId) {
+        return repo.findByVendedorId(vendedorId)
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    @Override
     public Historial save(Historial historial) {
         return repo.save(historial);
     }
